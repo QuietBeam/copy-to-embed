@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Copy to Embed</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h3>Custom Link Rules</h3>
+    <div id="rulesForm"></div>
+
+    <hr>
+    <h4>Add new site</h4>
+    <div class="add-rule-form">
+        <input id="newSite" type="text" placeholder="e.g. youtube.com">
+        <input id="newReplace" type="text" placeholder="e.g. customyoutube.com">
+    </div>
+    <div class="actions" style="margin-top: 10px;">
+        <button id="addRule" class="primary">Add Rule</button>
+        <button id="clearNewRule">Clear</button>
+    </div>
+
+    <hr>
+    <div class="actions">
+        <button id="save" class="primary">Save All</button>
+        <button id="restoreDefaults">Restore Defaults</button>
+    </div>
+    <div id="status"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

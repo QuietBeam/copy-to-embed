@@ -1,0 +1,24 @@
+{
+  "manifest_version": 2,
+  "name": "Copy to Embed",
+  "description": "Right-click a link or page to copy a Discord-embeddable version",
+  "version": "1.0",
+  "author": "Your Name",
+  "homepage_url": "https://github.com/QuietBeam/copy-to-embed",
+  "permissions": ["contextMenus", "clipboardWrite", "tabs", "storage", "notifications"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.svg"
+  },
+  "icons": {
+    "16": "icon.svg",
+    "32": "icon.svg",
+    "48": "icon.svg",
+    "96": "icon.svg",
+    "128": "icon.svg"
+  },
+  "web_accessible_resources": ["style.css", "icon.svg"]
+}

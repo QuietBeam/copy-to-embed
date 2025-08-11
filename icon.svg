@@ -1,0 +1,19 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clipboard base: gradient blue -->
+  <rect x="10" y="8" width="28" height="32" rx="4" ry="4" fill="url(#blueGradient)" stroke="#0af" stroke-width="2"/>
+  <!-- Clipboard clip: bright cyan -->
+  <rect x="18" y="4" width="12" height="8" rx="2" ry="2" fill="#0ff"/>
+  <!-- Arrow: vibrant orange -->
+  <path d="M24 20 L24 32" stroke="#f90" stroke-width="3" stroke-linecap="round"/>
+  <path d="M18 26 L24 32 L30 26" stroke="#f90" stroke-width="3" stroke-linejoin="round" fill="none"/>
+  <!-- Embed brackets: bright pink -->
+  <path d="M34 20 L38 24 L34 28" stroke="#f0f" stroke-width="3" stroke-linejoin="round" fill="none"/>
+  <path d="M14 20 L10 24 L14 28" stroke="#f0f" stroke-width="3" stroke-linejoin="round" fill="none"/>
+
+  <defs>
+    <linearGradient id="blueGradient" x1="10" y1="8" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0077ff"/>
+      <stop offset="1" stop-color="#00d0ff"/>
+    </linearGradient>
+  </defs>
+</svg>
