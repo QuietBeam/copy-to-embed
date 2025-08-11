@@ -42,13 +42,17 @@ function createRuleElement(site, replace) {
 }
 
 // Load rules from storage and display them in the form
-function loadRules() {
-    browser.storage.local.get("rules").then((data) => {
-        const rules = data.rules || {};
+function loadSettings() {
+    browser.storage.local.get(["rules", "notificationsEnabled"]).then((data) => {
+        const rules = data.rules || defaultRules;
+        const notificationsEnabled = data.notificationsEnabled !== false;
+
         rulesForm.innerHTML = "";
         for (const site in rules) {
             rulesForm.appendChild(createRuleElement(site, rules[site]));
         }
+
+        document.getElementById("notificationsEnabled").checked = notificationsEnabled;
     });
 }
 
@@ -78,7 +82,9 @@ document.getElementById("save").addEventListener("click", () => {
         newRules[siteInput.value.trim()] = replaceInput.value.trim();
     });
 
-    browser.storage.local.set({ rules: newRules }).then(() => {
+    const notificationsEnabled = document.getElementById("notificationsEnabled").checked;
+
+    browser.storage.local.set({ rules: newRules, notificationsEnabled: notificationsEnabled }).then(() => {
         const status = document.getElementById("status");
         status.textContent = "Settings saved!";
         setTimeout(() => {
@@ -94,5 +100,5 @@ document.getElementById("restoreDefaults").addEventListener("click", () => {
     }
 });
 
-// Load the rules when the popup is opened
-loadRules();
+// Load the extension settings when the popup is opened
+loadSettings();

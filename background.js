@@ -60,17 +60,26 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
   const transformed = transformURL(originalUrl);
 
   if (transformed) {
-    // Copy the transformed URL to the clipboard
-    navigator.clipboard.writeText(transformed)
-      .then(() => {
-        browser.notifications.create({
-          "type": "basic",
-          "iconUrl": browser.runtime.getURL("icon.svg"),
-          "title": "Link Copied!",
-          "message": `The transformed link has been copied to your clipboard: ${transformed}`
-        });
-        
-      })
-      .catch(err => console.error("Clipboard error:", err));
+    if (transformed) {
+    // Check if notifications are enabled before showing one
+    browser.storage.local.get("notificationsEnabled").then((data) => {
+      if (data.notificationsEnabled !== false) {
+        // Copy the transformed URL to the clipboard
+        navigator.clipboard.writeText(transformed)
+          .then(() => {
+            browser.notifications.create({
+              "type": "basic",
+              "iconUrl": browser.runtime.getURL("icon.svg"),
+              "title": "Link Copied!",
+              "message": `The transformed link has been copied to your clipboard: ${transformed}`
+            });
+          })
+          .catch(err => console.error("Clipboard error:", err));
+      } else {
+        // Silently copy to clipboard if notifications are disabled
+        navigator.clipboard.writeText(transformed)
+          .catch(err => console.error("Clipboard error:", err));
+      }
+    });
   }
-});
+}});
