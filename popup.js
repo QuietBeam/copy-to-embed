@@ -14,15 +14,32 @@ const defaultRules = {
 const createRuleElement = (site, replace) => {
   const el = document.createElement("div");
   el.className = "rule-container";
-  el.innerHTML = `
-    <input type="text" value="${site}" class="site">
-    → 
-    <input type="text" value="${replace}" class="replace">
-    <button class="deleteRule">Delete</button>
-  `;
-  el.querySelector(".deleteRule").addEventListener("click", () => el.remove());
+
+  const siteInput = document.createElement("input");
+  siteInput.type = "text";
+  siteInput.className = "site";
+  siteInput.value = site;
+
+  const arrow = document.createTextNode(" → ");
+
+  const replaceInput = document.createElement("input");
+  replaceInput.type = "text";
+  replaceInput.className = "replace";
+  replaceInput.value = replace;
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "deleteRule";
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", () => el.remove());
+
+  el.appendChild(siteInput);
+  el.appendChild(arrow);
+  el.appendChild(replaceInput);
+  el.appendChild(deleteBtn);
+
   return el;
 };
+
 
 const renderRules = (rules) => {
   rulesForm.innerHTML = "";
