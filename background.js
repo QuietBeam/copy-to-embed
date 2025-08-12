@@ -28,6 +28,11 @@ const createMenus = () => {
       title: "Copy embed-friendly page URL",
       contexts: ["page"]
     });
+    browser.contextMenus.create({
+      id: "transform-selection",
+      title: "Copy embed-friendly selected URL",
+      contexts: ["selection"]
+    });
   });
 };
 
@@ -48,7 +53,16 @@ browser.runtime.onInstalled.addListener(({ reason }) => {
 
 // Handle menu clicks
 browser.contextMenus.onClicked.addListener((info, tab) => {
-  const url = info.menuItemId === "transform-link" ? info.linkUrl : tab.url;
+  let url = null;
+
+  if (info.menuItemId === "transform-link") {
+    url = info.linkUrl;
+  } else if (info.menuItemId === "transform-page") {
+    url = tab.url;
+  } else if (info.menuItemId === "transform-selection") {
+    url = info.selectionText?.trim();
+  }
+
   const transformed = transformURL(url);
   if (!transformed) return;
 
@@ -65,7 +79,6 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
     }).catch(err => console.error("Clipboard error:", err));
   });
 });
-
 
 // Reload menus when rules change
 browser.storage.onChanged.addListener(() => {
