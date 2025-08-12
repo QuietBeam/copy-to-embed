@@ -1,85 +1,76 @@
 let rules = {};
 
 // Load rules from storage
-function loadRules() {
-  browser.storage.local.get("rules").then((data) => {
-    rules = data.rules || {};
-  });
-}
+const loadRules = () =>
+  browser.storage.local.get("rules").then(d => rules = d.rules || {});
 
-// Transform a URL based on the loaded rules
-function transformURL(url) {
+// Transform a URL based on rules
+const transformURL = (url) => {
   if (!url) return null;
   for (let key in rules) {
-    // Use a regular expression to match the domain more accurately
-    const regex = new RegExp(`^(https?://)?(www\.)?${key}`);
-    if (regex.test(url)) {
+    if (new RegExp(`^(https?://)?(www\.)?${key}`).test(url)) {
       return url.replace(key, rules[key]);
     }
   }
   return url;
-}
+};
 
-// Create context menus when the extension is installed
-browser.runtime.onInstalled.addListener(() => {
-  // Set default rules on installation
-  browser.storage.local.get("rules").then((data) => {
-    if (!data.rules) {
-      const defaultRules = {
+// Create context menus
+const createMenus = () => {
+  browser.contextMenus.removeAll().then(() => {
+    browser.contextMenus.create({
+      id: "transform-link",
+      title: "Copy embed-friendly link",
+      contexts: ["link"]
+    });
+    browser.contextMenus.create({
+      id: "transform-page",
+      title: "Copy embed-friendly page URL",
+      contexts: ["page"]
+    });
+  });
+};
+
+// Set default rules only on first install
+browser.runtime.onInstalled.addListener(({ reason }) => {
+  if (reason === "install") {
+    browser.storage.local.set({
+      rules: {
         "instagram.com": "ddinstagram.com",
         "reddit.com": "vxreddit.com",
         "tiktok.com": "vxtiktok.com",
-        "vm.tiktok.com" : "vm.tfxktok.com",
-        "x.com": "fixupx.com",
-      };
-      browser.storage.local.set({ rules: defaultRules });
-    }
-  });
-
-  browser.contextMenus.create({
-    id: "transform-link",
-    title: "Copy embed-friendly link",
-    contexts: ["link"]
-  });
-
-  browser.contextMenus.create({
-    id: "transform-page",
-    title: "Copy embed-friendly page URL",
-    contexts: ["page"]
-  });
-
-  loadRules();
-});
-
-
-browser.storage.onChanged.addListener(loadRules);
-
-// Handle clicks on the context menu items
-browser.contextMenus.onClicked.addListener((info, tab) => {
-  let originalUrl = (info.menuItemId === "transform-link") ? info.linkUrl : tab.url;
-  const transformed = transformURL(originalUrl);
-
-  if (transformed) {
-    if (transformed) {
-    // Check if notifications are enabled before showing one
-    browser.storage.local.get("notificationsEnabled").then((data) => {
-      if (data.notificationsEnabled !== false) {
-        // Copy the transformed URL to the clipboard
-        navigator.clipboard.writeText(transformed)
-          .then(() => {
-            browser.notifications.create({
-              "type": "basic",
-              "iconUrl": browser.runtime.getURL("icon.svg"),
-              "title": "Link Copied!",
-              "message": `The transformed link has been copied to your clipboard: ${transformed}`
-            });
-          })
-          .catch(err => console.error("Clipboard error:", err));
-      } else {
-        // Silently copy to clipboard if notifications are disabled
-        navigator.clipboard.writeText(transformed)
-          .catch(err => console.error("Clipboard error:", err));
+        "vm.tiktok.com": "vm.tfxktok.com",
+        "x.com": "fixupx.com"
       }
     });
   }
-}});
+});
+
+// Handle menu clicks
+browser.contextMenus.onClicked.addListener((info, tab) => {
+  const url = info.menuItemId === "transform-link" ? info.linkUrl : tab.url;
+  const transformed = transformURL(url);
+  if (!transformed) return;
+
+  browser.storage.local.get("notificationsEnabled").then(d => {
+    navigator.clipboard.writeText(transformed).then(() => {
+      if (d.notificationsEnabled !== false) {
+        browser.notifications.create({
+          type: "basic",
+          iconUrl: browser.runtime.getURL("icon.svg"),
+          title: "Link Copied!",
+          message: `Copied: ${transformed}`
+        });
+      }
+    }).catch(err => console.error("Clipboard error:", err));
+  });
+});
+
+
+// Reload menus when rules change
+browser.storage.onChanged.addListener(() => {
+  loadRules().then(createMenus);
+});
+
+// Load menus on each extension load?
+loadRules().then(createMenus);

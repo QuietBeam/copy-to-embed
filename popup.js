@@ -1,104 +1,78 @@
-// Get DOM elements
 const rulesForm = document.getElementById("rulesForm");
 const newSiteInput = document.getElementById("newSite");
 const newReplaceInput = document.getElementById("newReplace");
+const statusEl = document.getElementById("status");
 
 const defaultRules = {
-        "instagram.com": "ddinstagram.com",
-        "reddit.com": "vxreddit.com",
-        "tiktok.com": "vxtiktok.com",
-        "vm.tiktok.com" : "vm.tfxktok.com",
-        "x.com": "fixupx.com",
+  "instagram.com": "ddinstagram.com",
+  "reddit.com": "vxreddit.com",
+  "tiktok.com": "vxtiktok.com",
+  "vm.tiktok.com": "vm.tfxktok.com",
+  "x.com": "fixupx.com",
 };
 
-// Create a new rule element in the DOM
-function createRuleElement(site, replace) {
-    const ruleContainer = document.createElement("div");
-    ruleContainer.className = "rule-container";
+const createRuleElement = (site, replace) => {
+  const el = document.createElement("div");
+  el.className = "rule-container";
+  el.innerHTML = `
+    <input type="text" value="${site}" class="site">
+    → 
+    <input type="text" value="${replace}" class="replace">
+    <button class="deleteRule">Delete</button>
+  `;
+  el.querySelector(".deleteRule").addEventListener("click", () => el.remove());
+  return el;
+};
 
-    const siteInput = document.createElement("input");
-    siteInput.type = "text";
-    siteInput.value = site;
-    siteInput.className = "site";
+const renderRules = (rules) => {
+  rulesForm.innerHTML = "";
+  Object.entries(rules).forEach(([site, replace]) =>
+    rulesForm.appendChild(createRuleElement(site, replace))
+  );
+};
 
-    const replaceInput = document.createElement("input");
-    replaceInput.type = "text";
-    replaceInput.value = replace;
-    replaceInput.className = "replace";
+const loadSettings = () => {
+  browser.storage.local.get(["rules", "notificationsEnabled"]).then(data => {
+    renderRules(data.rules || defaultRules);
+    document.getElementById("notificationsEnabled").checked = data.notificationsEnabled !== false;
+  });
+};
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.className = "deleteRule";
-    deleteButton.addEventListener("click", () => {
-        ruleContainer.remove();
-    });
+const saveSettings = () => {
+  const rules = {};
+  rulesForm.querySelectorAll(".rule-container").forEach(c => {
+    const site = c.querySelector(".site").value.trim();
+    const replace = c.querySelector(".replace").value.trim();
+    if (site && replace) rules[site] = replace;
+  });
+  browser.storage.local.set({
+    rules,
+    notificationsEnabled: document.getElementById("notificationsEnabled").checked
+  }).then(() => {
+    statusEl.textContent = "Settings saved!";
+    setTimeout(() => (statusEl.textContent = ""), 2000);
+  });
+};
 
-    ruleContainer.appendChild(siteInput);
-    ruleContainer.appendChild(document.createTextNode(" → "));
-    ruleContainer.appendChild(replaceInput);
-    ruleContainer.appendChild(deleteButton);
-
-    return ruleContainer;
-}
-
-// Load rules from storage and display them in the form
-function loadSettings() {
-    browser.storage.local.get(["rules", "notificationsEnabled"]).then((data) => {
-        const rules = data.rules || defaultRules;
-        const notificationsEnabled = data.notificationsEnabled !== false;
-
-        rulesForm.innerHTML = "";
-        for (const site in rules) {
-            rulesForm.appendChild(createRuleElement(site, rules[site]));
-        }
-
-        document.getElementById("notificationsEnabled").checked = notificationsEnabled;
-    });
-}
-
-// Add a new rule to the form
 document.getElementById("addRule").addEventListener("click", () => {
-    const site = newSiteInput.value.trim();
-    const replace = newReplaceInput.value.trim();
-    if (site && replace) {
-        rulesForm.appendChild(createRuleElement(site, replace));
-        newSiteInput.value = "";
-        newReplaceInput.value = "";
-    }
+  const site = newSiteInput.value.trim();
+  const replace = newReplaceInput.value.trim();
+  if (site && replace) {
+    rulesForm.appendChild(createRuleElement(site, replace));
+    newSiteInput.value = "";
+    newReplaceInput.value = "";
+  }
 });
 
 document.getElementById("clearNewRule").addEventListener("click", () => {
-    newSiteInput.value = "";
-    newReplaceInput.value = "";
+  newSiteInput.value = "";
+  newReplaceInput.value = "";
 });
 
-// Save all rules to storage
-document.getElementById("save").addEventListener("click", () => {
-    const newRules = {};
-    const ruleContainers = rulesForm.querySelectorAll(".rule-container");
-    ruleContainers.forEach(container => {
-        const siteInput = container.querySelector(".site");
-        const replaceInput = container.querySelector(".replace");
-        newRules[siteInput.value.trim()] = replaceInput.value.trim();
-    });
-
-    const notificationsEnabled = document.getElementById("notificationsEnabled").checked;
-
-    browser.storage.local.set({ rules: newRules, notificationsEnabled: notificationsEnabled }).then(() => {
-        const status = document.getElementById("status");
-        status.textContent = "Settings saved!";
-        setTimeout(() => {
-            status.textContent = "";
-        }, 2000);
-    });
-});
+document.getElementById("save").addEventListener("click", saveSettings);
 
 document.getElementById("restoreDefaults").addEventListener("click", () => {
-    rulesForm.innerHTML = "";
-    for (const site in defaultRules) {
-        rulesForm.appendChild(createRuleElement(site, defaultRules[site]));
-    }
+  renderRules(defaultRules);
 });
 
-// Load the extension settings when the popup is opened
 loadSettings();
