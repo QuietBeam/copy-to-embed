@@ -18,7 +18,6 @@ This is a browser extension for Firefox that converts social media links into em
 
 ## Usage
 
-*   **To transform a link**: Right-click on the link and select **"Copy embed-friendly link"**.
+*   **To transform a link**: Right-click on the link and select **"Copy embed-friendly link"** or click on **"Select Link to Transform"** button that allows you to highlight and transform almost(at least non shadowdom) any link on the current page.
 *   **To transform the URL of the current page**: Right-click anywhere on the page and select **"Copy embed-friendly page URL"**.
-
 The transformed link will be copied to the clipboard.
