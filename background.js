@@ -4,12 +4,18 @@ let rules = {};
 const loadRules = () =>
   browser.storage.local.get("rules").then(d => rules = d.rules || {});
 
+// Function to mitigate some regex risks
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // Transform a URL based on rules
 const transformURL = (url) => {
   if (!url) return null;
   for (let key in rules) {
-    if (new RegExp(`^(https?://)?(www\.)?${key}`).test(url)) {
-      return url.replace(key, rules[key]);
+    const safeKey = escapeRegex(key);
+    if (new RegExp(`^(https?://)?(www\.)?${safeKey}`).test(url)) {
+      return url.replace(new RegExp(safeKey, "i"), rules[key]);
     }
   }
   return url;
@@ -79,6 +85,28 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
     }).catch(err => console.error("Clipboard error:", err));
   });
 });
+
+//logic for selectLink
+browser.runtime.onMessage.addListener(({action, url}) => {
+  if (action === "linkSelected") {
+    const transformed = transformURL(url);
+    if (!transformed) return;
+
+    browser.storage.local.get("notificationsEnabled").then(d => {
+      navigator.clipboard.writeText(transformed).then(() => {
+        if (d.notificationsEnabled !== false) {
+          browser.notifications.create({
+            type: "basic",
+            iconUrl: browser.runtime.getURL("icon.svg"),
+            title: "Link Copied!",
+            message: `Copied: ${transformed}`
+          });
+        }
+      }).catch(err => console.error("Clipboard error:", err));
+    });
+  }
+});
+
 
 // Reload menus when rules change
 browser.storage.onChanged.addListener(() => {
